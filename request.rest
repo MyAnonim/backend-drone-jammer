@@ -1,0 +1,28 @@
+GET  http://localhost:5000/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMwLCJ1c2VybmFtZSI6IlJlbmR5IiwibmFtYSI6IlJlbmR5IEVuZ2dhciIsImlkX2thcnlhd2FuIjoicmVuZHkwMSIsImphYmF0YW4iOiJrYXJ5YXdhbiIsImlhdCI6MTY5NzY4Mjc5MCwiZXhwIjoxNjk3NjgyODA1fQ.Nw7cTegs1GB4dVYhGL7qRAuDGpMvGm_319qBQx_JcZw
+
+###
+POST http://localhost:5000/users
+Content-Type: application/json
+
+{
+    "name" : "Bintang",
+    "email" : "bin@gmail.com",
+    "password": "12345",
+    "confPassword": "12345"
+}
+
+###
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "id_karyawan" : "rendy01",
+    "password": "123456"
+}
+
+###
+GET  http://localhost:5000/token
+
+###
+DELETE   http://localhost:5000/logout
