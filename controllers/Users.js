@@ -122,6 +122,11 @@ export const Login = async (req, res) => {
   }
 };
 
+export const geLogin = async (req, res) => {
+  try {
+  } catch (error) {}
+};
+
 export const Logout = async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken)

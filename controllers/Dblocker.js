@@ -1,6 +1,7 @@
 import { DblockerApi, UserApi } from "../models/UserModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { createRoutesFromChildren } from "react-router-dom";
 
 export const getDrone = async (req, res) => {
   try {
@@ -83,13 +84,34 @@ export const addDrone = async (req, res) => {
 };
 
 export const Turn = async (req, res) => {
-  const { jammer_rc, jammer_gps, dblocker_id } = req.body;
+  const { jammer_rc, jammer_gps, dblocker_id, user_id } = req.body;
+  const idUser = req.params.id; // Mengambil ID dari parameter URL
+
   try {
     const user = await DblockerApi.findAll({
       where: { id: dblocker_id },
     });
 
-    console.log(user);
+    const idLogin = await UserApi.findOne({
+      where: { id: idUser },
+    });
+
+    if (!idLogin || idLogin.length === 0) {
+      return res.status(404).json({
+        status: "fail",
+        message: "ID user tidak ditemukan",
+      });
+    }
+
+    // Memeriksa apakah ID di body request sama dengan ID di URL
+    if (idUser !== user_id) {
+      return res.status(400).json({
+        status: "fail",
+        message: "ID tidak sesuai",
+      });
+    }
+
+    console.log(idLogin);
 
     const userId = user[0].id;
     const no_seri = user[0].no_seri;
@@ -98,6 +120,75 @@ export const Turn = async (req, res) => {
 
     await DblockerApi.update(
       { jammer_rc: jammer_rc, jammer_gps: jammer_gps },
+      {
+        where: { id: userId },
+      }
+    );
+
+    res.json({
+      status: "success",
+      data: {
+        idUser: idLogin.id,
+        namaUser: idLogin.username,
+        id: userId,
+        no_seri: no_seri,
+        ip_addr: ip_addr,
+        location: location,
+        createdAt: user[0].createdAt,
+        updatedAt: user[0].updatedAt,
+        jammer_rc: jammer_rc,
+        jammer_gps: jammer_gps,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      status: "fail",
+      message: "Failed to Switch / Id not valid",
+    });
+  }
+};
+
+export const UpdateDrone = async (req, res) => {
+  const { no_seri, ip_addr, location } = req.body;
+  const id = req.params.id; // Mengambil ID dari parameter URL
+
+  try {
+    const user = await DblockerApi.findAll({
+      where: { id: id },
+    });
+
+    if (!user || user.length === 0) {
+      return res.status(404).json({
+        status: "fail",
+        message: "ID tidak ditemukan",
+      });
+    }
+
+    // Periksa apakah no_seri sudah ada dalam database
+    const existingNoSeri = await DblockerApi.findOne({
+      where: { no_seri },
+    });
+
+    // Periksa apakah ip_addr sudah ada dalam database
+    const existingIpAddr = await DblockerApi.findOne({
+      where: { ip_addr },
+    });
+
+    if (existingNoSeri || existingIpAddr) {
+      return res.status(400).json({
+        status: "fail",
+        message:
+          "nomer seri already registered / ip already used / error lainya",
+      });
+    }
+
+    const userId = user[0].id;
+    const jammer_rc = user[0].jammer_rc;
+    const jammer_gps = user[0].jammer_gps;
+
+    await DblockerApi.update(
+      { no_seri: no_seri, ip_addr: ip_addr, location: location },
       {
         where: { id: userId },
       }
@@ -120,7 +211,7 @@ export const Turn = async (req, res) => {
     console.log(error);
     return res.status(400).json({
       status: "fail",
-      message: "Failed to Switch / Id not valid",
+      message: "ip already used / error lainya",
     });
   }
 };
