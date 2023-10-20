@@ -83,44 +83,44 @@ export const addDrone = async (req, res) => {
 };
 
 export const Turn = async (req, res) => {
-  const user = await DblockerApi.findAll({
-    where: {
-      no_seri: req.body.no_seri,
-    },
-  });
-  console.log(req.body);
-
+  const { jammer_rc, jammer_gps, dblocker_id } = req.body;
   try {
-    // Periksa apakah No_Seri sudah ada dalam database
-    const existingNoSeri = await DblockerApi.findOne({ where: { no_seri } });
-
-    if (existingNoSeri) {
-      return res.status(400).json({
-        status: "fail",
-        message: "Failed to Switch / Id not valid",
-      });
-    }
-
-    const dblocker = await DblockerApi.update({
-      where: { no_seri: no_seri, jammer_rc: jammer_rc, jammer_gps: jammer_gps },
+    const user = await DblockerApi.findAll({
+      where: { id: dblocker_id },
     });
 
-    console.log(dblocker);
+    console.log(user);
+
+    const userId = user[0].id;
+    const no_seri = user[0].no_seri;
+    const ip_addr = user[0].ip_addr;
+    const location = user[0].location;
+
+    await DblockerApi.update(
+      { jammer_rc: jammer_rc, jammer_gps: jammer_gps },
+      {
+        where: { id: userId },
+      }
+    );
 
     res.json({
       status: "success",
       data: {
-        id: dblocker.id,
+        id: userId,
         no_seri: no_seri,
-        ip_addr: dblocker.ip_addr,
-        location: dblocker.location,
-        createdAt: dblocker.createdAt,
-        updatedAt: dblocker.updatedAt,
+        ip_addr: ip_addr,
+        location: location,
+        createdAt: user[0].createdAt,
+        updatedAt: user[0].updatedAt,
         jammer_rc: jammer_rc,
         jammer_gps: jammer_gps,
       },
     });
   } catch (error) {
     console.log(error);
+    return res.status(400).json({
+      status: "fail",
+      message: "Failed to Switch / Id not valid",
+    });
   }
 };
