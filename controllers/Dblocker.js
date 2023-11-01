@@ -1,4 +1,5 @@
 import { DblockerApi, UserApi } from "../models/UserModel.js";
+import { SerialPort } from "serialport";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { createRoutesFromChildren } from "react-router-dom";
@@ -83,71 +84,69 @@ export const addDrone = async (req, res) => {
   }
 };
 
-export const Turn = async (req, res) => {
-  const { jammer_rc, jammer_gps, dblocker_id, user_id } = req.body;
-  const idUser = req.params.id; // Mengambil ID dari parameter URL
+// export const Turn = async (req, res) => {
+//   const { jammer_rc, jammer_gps, dblocker_id, user_id } = req.body;
+//   const idUser = req.params.id; // Mengambil ID dari parameter URL
 
-  try {
-    const user = await DblockerApi.findAll({
-      where: { id: dblocker_id },
-    });
+//   try {
+//     const user = await DblockerApi.findAll({
+//       where: { id: dblocker_id },
+//     });
 
-    const idLogin = await UserApi.findOne({
-      where: { id: idUser },
-    });
+//     const idLogin = await UserApi.findOne({
+//       where: { id: user_id },
+//     });
 
-    if (!idLogin || idLogin.length === 0) {
-      return res.status(404).json({
-        status: "fail",
-        message: "ID user tidak ditemukan",
-      });
-    }
+//     if (!idLogin || idLogin.length === 0) {
+//       return res.status(404).json({
+//         status: "fail",
+//         message: "ID user tidak ditemukan",
+//       });
+//     }
 
-    // Memeriksa apakah ID di body request sama dengan ID di URL
-    if (idUser !== user_id) {
-      return res.status(400).json({
-        status: "fail",
-        message: "ID tidak sesuai",
-      });
-    }
+//     // Memeriksa apakah ID di body request sama dengan ID di URL
+//     if (idUser !== user_id) {
+//       return res.status(400).json({
+//         status: "fail",
+//         message: "ID tidak sesuai",
+//       });
+//     }
 
-    console.log(idLogin);
+//     const userId = user[0].id;
+//     const no_seri = user[0].no_seri;
+//     const ip_addr = user[0].ip_addr;
+//     const location = user[0].location;
 
-    const userId = user[0].id;
-    const no_seri = user[0].no_seri;
-    const ip_addr = user[0].ip_addr;
-    const location = user[0].location;
+//     await DblockerApi.update(
+//       { jammer_rc: jammer_rc, jammer_gps: jammer_gps },
+//       {
+//         where: { id: userId },
+//       }
+//     );
 
-    await DblockerApi.update(
-      { jammer_rc: jammer_rc, jammer_gps: jammer_gps },
-      {
-        where: { id: userId },
-      }
-    );
-
-    res.json({
-      status: "success",
-      data: {
-        idUser: idLogin.id,
-        namaUser: idLogin.username,
-        id: userId,
-        no_seri: no_seri,
-        ip_addr: ip_addr,
-        location: location,
-        createdAt: user[0].createdAt,
-        updatedAt: user[0].updatedAt,
-        jammer_rc: jammer_rc,
-        jammer_gps: jammer_gps,
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({
-      status: "fail",
-      message: "Failed to Switch / Id not valid",
-    });
-  }
-};
+//     res.json({
+//       status: "success",
+//       data: {
+//         idUser: idLogin.id,
+//         namaUser: idLogin.username,
+//         id: userId,
+//         no_seri: no_seri,
+//         ip_addr: ip_addr,
+//         location: location,
+//         createdAt: user[0].createdAt,
+//         updatedAt: user[0].updatedAt,
+//         jammer_rc: jammer_rc,
+//         jammer_gps: jammer_gps,
+//       },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     return res.status(400).json({
+//       status: "fail",
+//       message: "Failed to Switch / Id not valid",
+//     });
+//   }
+// };
 
 export const UpdateDrone = async (req, res) => {
   const { no_seri, ip_addr, location } = req.body;
@@ -213,5 +212,38 @@ export const UpdateDrone = async (req, res) => {
       status: "fail",
       message: "ip already used / error lainya",
     });
+  }
+};
+
+export const deleteDrone = async (req, res) => {
+  try {
+    const drone = await DblockerApi.findOne({
+      where: {
+        id: req.params.id,
+      },
+    });
+    if (!drone) return res.status(404).json({ msg: "Drone tidak ditemukan" });
+    console.log(drone);
+
+    const userId = drone.id;
+    const noSeri = drone.no_seri;
+    const ipAddr = drone.ip_addr;
+
+    res.status(200).json({
+      status: "success deleted drone",
+      data: {
+        user_id: userId,
+        no_seri: noSeri,
+        ip_addr: ipAddr,
+      },
+    });
+
+    await DblockerApi.destroy({
+      where: {
+        id: drone.id,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ msg: error.message });
   }
 };

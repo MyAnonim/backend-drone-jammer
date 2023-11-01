@@ -7,7 +7,6 @@ export const getUsers = async (req, res) => {
     const data = await UserApi.findAll({
       attributes: ["username", "nama"],
     });
-    // res.json(user_api);
     res.json({
       status: "success",
       data,
@@ -39,7 +38,7 @@ export const Register = async (req, res) => {
     if (password !== confPassword)
       return res
         .status(400)
-        .json({ msg: "Password dan Confirm Password tidak cocok" });
+        .json({ message: "Password dan Confirm Password tidak cocok" });
     const salt = await bcrypt.genSalt();
     const hashPassword = await bcrypt.hash(password, salt);
 
@@ -75,7 +74,9 @@ export const Login = async (req, res) => {
     console.log(req.body);
     const match = await bcrypt.compare(req.body.password, user[0].password);
     if (!match)
-      return res.status(400).json({ msg: "Password yang anda masukkan salah" });
+      return res
+        .status(400)
+        .json({ message: "Password yang anda masukkan salah" });
     const userId = user[0].id;
     const username = user[0].username;
     const nama = user[0].nama;
@@ -122,11 +123,6 @@ export const Login = async (req, res) => {
   }
 };
 
-export const geLogin = async (req, res) => {
-  try {
-  } catch (error) {}
-};
-
 export const Logout = async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken)
@@ -151,4 +147,34 @@ export const Logout = async (req, res) => {
   return res.status(200).json({
     status: "success",
   });
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await UserApi.findOne({
+      where: {
+        id: req.params.id,
+      },
+    });
+    if (!user) return res.status(404).json({ msg: "User tidak ditemukan" });
+
+    const userId = user.id;
+    const username = user.username;
+    // res.status(200).json({ msg: "User Success Deleted" });
+    res.status(200).json({
+      status: "success deleted",
+      data: {
+        user_id: userId,
+        username: username,
+      },
+    });
+
+    await UserApi.destroy({
+      where: {
+        id: user.id,
+      },
+    });
+  } catch (error) {
+    res.status(400).json({ msg: error.message });
+  }
 };

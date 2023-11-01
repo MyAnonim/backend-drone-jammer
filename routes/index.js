@@ -1,13 +1,20 @@
 import express from "express";
-import { getUsers, Register, Login, Logout } from "../controllers/Users.js";
+import {
+  getUsers,
+  Register,
+  Login,
+  Logout,
+  deleteUser,
+} from "../controllers/Users.js";
 import { verifyToken } from "../middleware/VerifyToken.js";
 import { refreshToken } from "../controllers/RefreshToken.js";
 import {
   addDrone,
   getDrone,
-  Turn,
   UpdateDrone,
+  deleteDrone,
 } from "../controllers/Dblocker.js";
+import { Turn } from "../controllers/Turn.js";
 
 const router = express.Router();
 
@@ -16,10 +23,12 @@ router.post("/users", Register);
 router.post("/login", Login);
 router.get("/token", refreshToken);
 router.delete("/logout", Logout);
+router.delete("/delete/:id", deleteUser);
 
-router.get("/drone", getDrone);
+router.get("/drone", verifyToken, getDrone);
 router.post("/drone", addDrone);
-router.post("/turn/:id", Turn);
-router.put("/drone/:id", UpdateDrone);
+router.post("/drone/:id", Turn);
+router.put("/drone/edit/:id", UpdateDrone);
+router.delete("/drone/deleted/:id", deleteDrone);
 
 export default router;
