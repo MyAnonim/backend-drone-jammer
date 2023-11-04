@@ -26,8 +26,8 @@ router.delete("/logout", Logout);
 router.delete("/delete/:id", deleteUser);
 
 router.get("/drone", verifyToken, getDrone);
-router.post("/drone", addDrone);
-router.post("/drone/:id", Turn);
+router.post("/drone", verifyToken, addDrone);
+router.post("/drone/:id", verifyToken, Turn);
 router.put("/drone/edit/:id", UpdateDrone);
 router.delete("/drone/deleted/:id", deleteDrone);
 

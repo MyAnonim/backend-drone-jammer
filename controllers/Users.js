@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 export const getUsers = async (req, res) => {
   try {
     const data = await UserApi.findAll({
-      attributes: ["username", "nama"],
+      attributes: ["username", "nama", "refresh_token"],
     });
     res.json({
       status: "success",
@@ -71,7 +71,6 @@ export const Login = async (req, res) => {
         username: req.body.username,
       },
     });
-    console.log(req.body);
     const match = await bcrypt.compare(req.body.password, user[0].password);
     if (!match)
       return res
